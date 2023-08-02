@@ -208,7 +208,8 @@ func (m *CachingIdentityAllocator) LookupIdentity(ctx context.Context, lbls labe
 		return reservedIdentity
 	}
 
-	if !identity.RequiresGlobalIdentity(lbls) {
+	switch identity.ScopeForLabels(lbls) {
+	case identity.IdentityScopeLocalCIDR:
 		return m.localCIDRIdentities.lookup(lbls)
 	}
 

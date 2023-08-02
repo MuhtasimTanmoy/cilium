@@ -81,6 +81,16 @@ func (s *IdentityTestSuite) TestRequiresGlobalIdentity(c *C) {
 	c.Assert(RequiresGlobalIdentity(labels.NewLabelsFromModel([]string{"k8s:foo=bar"})), Equals, true)
 }
 
+func (s *IdentityTestSuite) TestScopeForLabels(c *C) {
+	prefix := netip.MustParsePrefix("0.0.0.0/0")
+	c.Assert(ScopeForLabels(cidr.GetCIDRLabels(prefix)), Equals, IdentityScopeLocalCIDR)
+
+	prefix = netip.MustParsePrefix("192.168.23.0/24")
+	c.Assert(ScopeForLabels(cidr.GetCIDRLabels(prefix)), Equals, IdentityScopeLocalCIDR)
+
+	c.Assert(ScopeForLabels(labels.NewLabelsFromModel([]string{"k8s:foo=bar"})), Equals, IdentityScopeGlobal)
+}
+
 func (s *IdentityTestSuite) TestNewIdentityFromLabelArray(c *C) {
 	id := NewIdentityFromLabelArray(NumericIdentity(1001),
 		labels.NewLabelArrayFromSortedList("unspec:a=;unspec:b;unspec:c=d"))

@@ -349,7 +349,10 @@ func (m *CachingIdentityAllocator) AllocateIdentity(ctx context.Context, lbls la
 		return reservedIdentity, false, nil
 	}
 
-	if !identity.RequiresGlobalIdentity(lbls) {
+	// If the set of labels uses non-global scope,
+	// then allocate with the appropriate local allocator and return.
+	switch identity.ScopeForLabels(lbls) {
+	case identity.IdentityScopeLocalCIDR:
 		return m.localCIDRIdentities.lookupOrCreate(lbls, oldNID)
 	}
 
@@ -411,7 +414,8 @@ func (m *CachingIdentityAllocator) Release(ctx context.Context, id *identity.Ide
 		return false, nil
 	}
 
-	if !identity.RequiresGlobalIdentity(id.Labels) {
+	switch identity.ScopeForLabels(id.Labels) {
+	case identity.IdentityScopeLocalCIDR:
 		return m.localCIDRIdentities.release(id), nil
 	}
 
