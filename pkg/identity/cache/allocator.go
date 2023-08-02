@@ -46,7 +46,7 @@ type CachingIdentityAllocator struct {
 	// allocator is initialized.
 	globalIdentityAllocatorInitialized chan struct{}
 
-	localIdentities *localIdentityCache
+	localCIDRIdentities *localIdentityCache
 
 	identitiesPath string
 
@@ -253,7 +253,7 @@ func NewCachingIdentityAllocator(owner IdentityAllocatorOwner) *CachingIdentityA
 
 	// Local identity cache can be created synchronously since it doesn't
 	// rely upon any external resources (e.g., external kvstore).
-	m.localIdentities = newLocalIdentityCache(identity.MinAllocatorLocalIdentity, identity.MaxAllocatorLocalIdentity, m.events)
+	m.localCIDRIdentities = newLocalIdentityCache(identity.IdentityScopeLocalCIDR, identity.MinAllocatorLocalIdentity, identity.MaxAllocatorLocalIdentity, m.events)
 
 	return m
 }
@@ -277,7 +277,7 @@ func (m *CachingIdentityAllocator) Close() {
 	if m.events != nil {
 		// Have the now only remaining writing party close the events channel,
 		// to ensure we don't panic with 'send on closed channel'.
-		m.localIdentities.close()
+		m.localCIDRIdentities.close()
 		m.events = nil
 	}
 
@@ -350,7 +350,7 @@ func (m *CachingIdentityAllocator) AllocateIdentity(ctx context.Context, lbls la
 	}
 
 	if !identity.RequiresGlobalIdentity(lbls) {
-		return m.localIdentities.lookupOrCreate(lbls, oldNID)
+		return m.localCIDRIdentities.lookupOrCreate(lbls, oldNID)
 	}
 
 	// This will block until the kvstore can be accessed and all identities
@@ -412,7 +412,7 @@ func (m *CachingIdentityAllocator) Release(ctx context.Context, id *identity.Ide
 	}
 
 	if !identity.RequiresGlobalIdentity(id.Labels) {
-		return m.localIdentities.release(id), nil
+		return m.localCIDRIdentities.release(id), nil
 	}
 
 	// This will block until the kvstore can be accessed and all identities

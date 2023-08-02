@@ -69,7 +69,7 @@ func (m *CachingIdentityAllocator) GetIdentityCache() IdentityCache {
 		cache[ni] = id.Labels.LabelArray()
 	})
 
-	for _, identity := range m.localIdentities.GetIdentities() {
+	for _, identity := range m.localCIDRIdentities.GetIdentities() {
 		cache[identity.ID] = identity.Labels.LabelArray()
 	}
 
@@ -93,7 +93,7 @@ func (m *CachingIdentityAllocator) GetIdentities() IdentitiesModel {
 		identities = append(identities, identitymodel.CreateModel(id))
 	})
 
-	for _, v := range m.localIdentities.GetIdentities() {
+	for _, v := range m.localCIDRIdentities.GetIdentities() {
 		identities = append(identities, identitymodel.CreateModel(v))
 	}
 
@@ -209,7 +209,7 @@ func (m *CachingIdentityAllocator) LookupIdentity(ctx context.Context, lbls labe
 	}
 
 	if !identity.RequiresGlobalIdentity(lbls) {
-		return m.localIdentities.lookup(lbls)
+		return m.localCIDRIdentities.lookup(lbls)
 	}
 
 	if !m.isGlobalIdentityAllocatorInitialized() {
@@ -248,7 +248,7 @@ func (m *CachingIdentityAllocator) LookupIdentityByID(ctx context.Context, id id
 	}
 
 	if id.HasLocalCIDRScope() {
-		return m.localIdentities.lookupByID(id)
+		return m.localCIDRIdentities.lookupByID(id)
 	}
 
 	if !m.isGlobalIdentityAllocatorInitialized() {
