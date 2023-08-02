@@ -263,11 +263,11 @@ func (e *Endpoint) getEndpointPolicy() (ep *cilium_v2.EndpointPolicy) {
 			id := identity.NumericIdentity(policyKey.Identity)
 			switch {
 			case policyKey.IsIngress():
-				if allowsAllIngress || (id.HasLocalScope() && allowsWorldIngress) {
+				if allowsAllIngress || (id.HasLocalCIDRScope() && allowsWorldIngress) {
 					continue
 				}
 			case policyKey.IsEgress():
-				if allowsAllEgress || (id.HasLocalScope() && allowsWorldEgress) {
+				if allowsAllEgress || (id.HasLocalCIDRScope() && allowsWorldEgress) {
 					continue
 				}
 			}

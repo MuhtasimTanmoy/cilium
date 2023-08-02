@@ -247,7 +247,7 @@ func (m *CachingIdentityAllocator) LookupIdentityByID(ctx context.Context, id id
 		return identity
 	}
 
-	if id.HasLocalScope() {
+	if id.HasLocalCIDRScope() {
 		return m.localIdentities.lookupByID(id)
 	}
 

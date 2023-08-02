@@ -342,7 +342,7 @@ func (ias *IdentityAllocatorSuite) TestLocalAllocation(c *C) {
 	c.Assert(id, Not(IsNil))
 	c.Assert(err, IsNil)
 	c.Assert(isNew, Equals, true)
-	c.Assert(id.ID.HasLocalScope(), Equals, true)
+	c.Assert(id.ID.HasLocalCIDRScope(), Equals, true)
 	// Wait for the update event from the KV-store
 	c.Assert(owner.WaitUntilID(id.ID), Not(Equals), 0)
 	c.Assert(owner.GetIdentity(id.ID), checker.DeepEquals, lbls1.LabelArray())
@@ -381,7 +381,7 @@ func (ias *IdentityAllocatorSuite) TestLocalAllocation(c *C) {
 	c.Assert(id, Not(IsNil))
 	c.Assert(err, IsNil)
 	c.Assert(isNew, Equals, true)
-	c.Assert(id.ID.HasLocalScope(), Equals, true)
+	c.Assert(id.ID.HasLocalCIDRScope(), Equals, true)
 
 	released, err = mgr.Release(context.Background(), id, false)
 	c.Assert(err, IsNil)

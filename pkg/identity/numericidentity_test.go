@@ -14,13 +14,13 @@ import (
 )
 
 func (s *IdentityTestSuite) TestLocalIdentity(c *C) {
-	localID := NumericIdentity(LocalIdentityFlag | 1)
-	c.Assert(localID.HasLocalScope(), Equals, true)
+	localID := NumericIdentity(IdentityScopeLocalCIDR | 1)
+	c.Assert(localID.HasLocalCIDRScope(), Equals, true)
 
 	maxClusterID := NumericIdentity(types.ClusterIDMax | 1)
-	c.Assert(maxClusterID.HasLocalScope(), Equals, false)
+	c.Assert(maxClusterID.HasLocalCIDRScope(), Equals, false)
 
-	c.Assert(ReservedIdentityWorld.HasLocalScope(), Equals, false)
+	c.Assert(ReservedIdentityWorld.HasLocalCIDRScope(), Equals, false)
 }
 
 func (s *IdentityTestSuite) TestClusterID(c *C) {

@@ -64,7 +64,7 @@ func (s *IdentityCacheTestSuite) TestLocalIdentityCache(c *C) {
 	// lookup must still be successful
 	for i := minID; i <= maxID; i++ {
 		c.Assert(cache.lookup(labels.NewLabelsFromModel([]string{fmt.Sprintf("%d", i)})), Not(IsNil))
-		c.Assert(cache.lookupByID(i|identity.LocalIdentityFlag), Not(IsNil))
+		c.Assert(cache.lookupByID(i|identity.IdentityScopeLocalCIDR), Not(IsNil))
 	}
 
 	// release the identities a second time, this must cause the identity
@@ -82,7 +82,7 @@ func (s *IdentityCacheTestSuite) TestLocalIdentityCache(c *C) {
 	}
 
 	// release a random identity in the middle
-	randomID := identity.NumericIdentity(3) | identity.LocalIdentityFlag
+	randomID := identity.NumericIdentity(3) | identity.IdentityScopeLocalCIDR
 	c.Assert(cache.release(identities[randomID]), Equals, true)
 
 	id, isNew, err := cache.lookupOrCreate(labels.NewLabelsFromModel([]string{"foo"}), identity.InvalidIdentity)

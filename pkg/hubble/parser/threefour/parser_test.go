@@ -447,8 +447,8 @@ func TestDecodeDropReason(t *testing.T) {
 func TestDecodeLocalIdentity(t *testing.T) {
 	tn := monitor.TraceNotifyV0{
 		Type:     byte(monitorAPI.MessageTypeTrace),
-		SrcLabel: 123 | identity.LocalIdentityFlag,
-		DstLabel: 456 | identity.LocalIdentityFlag,
+		SrcLabel: 123 | identity.IdentityScopeLocalCIDR,
+		DstLabel: 456 | identity.IdentityScopeLocalCIDR,
 	}
 	data, err := testutils.CreateL3L4Payload(tn)
 	require.NoError(t, err)

@@ -106,7 +106,7 @@ func (s *SSHMeta) BpfIPCacheList(localScopeOnly bool) (map[string]uint32, error)
 					return nil, fmt.Errorf("cannot parse identity from: %s (%s): %s", s, s[idIdx:endIdx], err)
 				}
 				nid = uint32(nid64)
-				if localScopeOnly && !identity.NumericIdentity(nid).HasLocalScope() {
+				if localScopeOnly && !identity.NumericIdentity(nid).HasLocalCIDRScope() {
 					nid = 0
 					continue
 				}

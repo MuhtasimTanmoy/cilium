@@ -22,9 +22,19 @@ const (
 	// shifted
 	ClusterIDShift = 16
 
-	// LocalIdentityFlag is the bit in the numeric identity that identifies
-	// a numeric identity to have local scope
-	LocalIdentityFlag = NumericIdentity(1 << 24)
+	// Identities also have scopes, which is defined by the high 8 bits.
+	// 0x00 -- global and reserved identities
+	// 0x01 -- local CIDR identities
+
+	// IdentityScopeMask is the top 8 bits of the 32 bit identity
+	IdentityScopeMask = NumericIdentity(0xFF_00_00_00)
+
+	// IdentityScopeGlobal is the identity scope used by global and reserved identities.
+	IdentityScopeGlobal = NumericIdentity(0)
+
+	// IdentityScopeLocalCIDR is the tag in the numeric identity that identifies
+	// a numeric identity to have local scope.
+	IdentityScopeLocalCIDR = NumericIdentity(1 << 24)
 
 	// MinAllocatorLocalIdentity represents the minimal numeric identity
 	// that the localIdentityCache allocator can allocate for a local (CIDR)
@@ -35,9 +45,9 @@ const (
 	// LocalIdentityFlag.
 	MinAllocatorLocalIdentity = 1
 
-	// MinLocalIdentity represents the actual minimal numeric identity value
-	// for a local (CIDR) identity.
-	MinLocalIdentity = MinAllocatorLocalIdentity | LocalIdentityFlag
+	// MinLocalCIDRIdentity represents the actual minimal numeric identity value
+	// for a local CIDR identity.
+	MinLocalCIDRIdentity = MinAllocatorLocalIdentity | IdentityScopeLocalCIDR
 
 	// MaxAllocatorLocalIdentity represents the maximal numeric identity
 	// that the localIdentityCache allocator can allocate for a local (CIDR)
@@ -48,9 +58,9 @@ const (
 	// LocalIdentityFlag.
 	MaxAllocatorLocalIdentity = 0xFFFFFF
 
-	// MaxLocalIdentity represents the actual maximal numeric identity value
+	// MaxLocalCIDRIdentity represents the actual maximal numeric identity value
 	// for a local (CIDR) identity.
-	MaxLocalIdentity = MaxAllocatorLocalIdentity | LocalIdentityFlag
+	MaxLocalCIDRIdentity = MaxAllocatorLocalIdentity | IdentityScopeLocalCIDR
 
 	// MinimalNumericIdentity represents the minimal numeric identity not
 	// used for reserved purposes.
@@ -584,9 +594,9 @@ func iterateReservedIdentityLabels(f func(_ NumericIdentity, _ labels.Labels)) {
 	}
 }
 
-// HasLocalScope returns true if the identity has a local scope
-func (id NumericIdentity) HasLocalScope() bool {
-	return (id & LocalIdentityFlag) != 0
+// HasLocalCIDRScope returns true if the identity is in the Local CIDR scope
+func (id NumericIdentity) HasLocalCIDRScope() bool {
+	return (id & IdentityScopeMask) == IdentityScopeLocalCIDR
 }
 
 // IsWorld returns true if the identity is one of the world identities

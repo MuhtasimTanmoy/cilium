@@ -555,7 +555,7 @@ func newDaemon(ctx context.Context, cleaner *daemonCleanup, params *daemonParams
 			k := key.(*ipcachemap.Key)
 			v := value.(*ipcachemap.RemoteEndpointInfo)
 			nid := identity.NumericIdentity(v.SecurityIdentity)
-			if nid.HasLocalScope() {
+			if nid.HasLocalCIDRScope() {
 				d.restoredCIDRs = append(d.restoredCIDRs, k.Prefix())
 				oldNIDs = append(oldNIDs, nid)
 			} else if nid == identity.ReservedIdentityIngress && v.TunnelEndpoint.IsZero() {

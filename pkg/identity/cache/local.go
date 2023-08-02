@@ -50,7 +50,7 @@ func (l *localIdentityCache) bumpNextNumericIdentity() {
 // The l.mutex must be held
 func (l *localIdentityCache) getNextFreeNumericIdentity(idCandidate identity.NumericIdentity) (identity.NumericIdentity, error) {
 	// Try first with the given candidate
-	if idCandidate.HasLocalScope() {
+	if idCandidate.HasLocalCIDRScope() {
 		if _, taken := l.identitiesByID[idCandidate]; !taken {
 			// let nextNumericIdentity be, allocated identities will be skipped anyway
 			log.Debugf("Reallocated restored CIDR identity: %d", idCandidate)
@@ -59,7 +59,7 @@ func (l *localIdentityCache) getNextFreeNumericIdentity(idCandidate identity.Num
 	}
 	firstID := l.nextNumericIdentity
 	for {
-		idCandidate = l.nextNumericIdentity | identity.LocalIdentityFlag
+		idCandidate = l.nextNumericIdentity | identity.IdentityScopeLocalCIDR
 		if _, taken := l.identitiesByID[idCandidate]; !taken {
 			l.bumpNextNumericIdentity()
 			return idCandidate, nil

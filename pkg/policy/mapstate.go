@@ -214,7 +214,7 @@ func getNets(identities Identities, ident uint32) []*net.IPNet {
 		return worldNets[id]
 	}
 	// CIDR identities have a local scope, so we can skip the rest if id is not of local scope.
-	if !id.HasLocalScope() || identities == nil {
+	if !id.HasLocalCIDRScope() || identities == nil {
 		return nil
 	}
 	return identities.GetNetsLocked(id)
