@@ -25,6 +25,7 @@ const (
 	// Identities also have scopes, which is defined by the high 8 bits.
 	// 0x00 -- global and reserved identities
 	// 0x01 -- local CIDR identities
+	// 0x02 -- remote nodes
 
 	// IdentityScopeMask is the top 8 bits of the 32 bit identity
 	IdentityScopeMask = NumericIdentity(0xFF_00_00_00)
@@ -35,6 +36,10 @@ const (
 	// IdentityScopeLocalCIDR is the tag in the numeric identity that identifies
 	// a numeric identity to have local scope.
 	IdentityScopeLocalCIDR = NumericIdentity(1 << 24)
+
+	// IdentityScopeRemoteNode is the tag in the numeric identity that identifies
+	// an identity to be a remote in-cluster node.
+	IdentityScopeRemoteNode = NumericIdentity(2 << 24)
 
 	// MinAllocatorLocalIdentity represents the minimal numeric identity
 	// that the localIdentityCache allocator can allocate for a local (CIDR)
