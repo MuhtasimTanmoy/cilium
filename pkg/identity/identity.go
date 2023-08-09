@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/cilium/cilium/pkg/labels"
+	"github.com/cilium/cilium/pkg/option"
 )
 
 const (
@@ -190,6 +191,13 @@ func RequiresGlobalIdentity(lbls labels.Labels) bool {
 func ScopeForLabels(lbls labels.Labels) NumericIdentity {
 	scope := IdentityScopeGlobal
 
+	// If this is a remote node, return the remote node scope.
+	// Note that this is not reachable when policy-cidr-selects-nodes is false, since
+	// callers will already have gotten a value from LookupReservedIdentityByLabels.
+	if lbls.Has(labels.LabelRemoteNode[labels.IDNameRemoteNode]) {
+		return IdentityScopeRemoteNode
+	}
+
 	for _, label := range lbls {
 		switch label.Source {
 		case labels.LabelSourceCIDR, labels.LabelSourceReserved:
@@ -254,6 +262,11 @@ func LookupReservedIdentityByLabels(lbls labels.Labels) *Identity {
 	if lbls.Has(labels.LabelHost[labels.IDNameHost]) {
 		nid = ReservedIdentityHost
 	} else if lbls.Has(labels.LabelRemoteNode[labels.IDNameRemoteNode]) {
+		// If selecting remote-nodes via CIDR policies is allowed, then
+		// they no longer have a reserved identity.
+		if option.Config.PolicyCIDRSelectsNodes {
+			return nil
+		}
 		nid = ReservedIdentityRemoteNode
 		if lbls.Has(labels.LabelKubeAPIServer[labels.IDNameKubeAPIServer]) {
 			// If there's a kube-apiserver label, then we know this is

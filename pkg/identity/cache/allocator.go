@@ -48,6 +48,8 @@ type CachingIdentityAllocator struct {
 
 	localCIDRIdentities *localIdentityCache
 
+	localNodeIdentities *localIdentityCache
+
 	identitiesPath string
 
 	// This field exists is to hand out references that are either for sending
@@ -254,6 +256,7 @@ func NewCachingIdentityAllocator(owner IdentityAllocatorOwner) *CachingIdentityA
 	// Local identity cache can be created synchronously since it doesn't
 	// rely upon any external resources (e.g., external kvstore).
 	m.localCIDRIdentities = newLocalIdentityCache(identity.IdentityScopeLocalCIDR, identity.MinAllocatorLocalIdentity, identity.MaxAllocatorLocalIdentity, m.events)
+	m.localNodeIdentities = newLocalIdentityCache(identity.IdentityScopeRemoteNode, identity.MinAllocatorLocalIdentity, identity.MaxAllocatorLocalIdentity, m.events)
 
 	return m
 }
@@ -275,9 +278,9 @@ func (m *CachingIdentityAllocator) Close() {
 
 	m.IdentityAllocator.Delete()
 	if m.events != nil {
-		// Have the now only remaining writing party close the events channel,
-		// to ensure we don't panic with 'send on closed channel'.
 		m.localCIDRIdentities.close()
+		m.localNodeIdentities.close()
+		close(m.events)
 		m.events = nil
 	}
 
@@ -354,6 +357,8 @@ func (m *CachingIdentityAllocator) AllocateIdentity(ctx context.Context, lbls la
 	switch identity.ScopeForLabels(lbls) {
 	case identity.IdentityScopeLocalCIDR:
 		return m.localCIDRIdentities.lookupOrCreate(lbls, oldNID)
+	case identity.IdentityScopeRemoteNode:
+		return m.localNodeIdentities.lookupOrCreate(lbls, oldNID)
 	}
 
 	// This will block until the kvstore can be accessed and all identities
@@ -417,6 +422,8 @@ func (m *CachingIdentityAllocator) Release(ctx context.Context, id *identity.Ide
 	switch identity.ScopeForLabels(id.Labels) {
 	case identity.IdentityScopeLocalCIDR:
 		return m.localCIDRIdentities.release(id), nil
+	case identity.IdentityScopeRemoteNode:
+		return m.localNodeIdentities.release(id), nil
 	}
 
 	// This will block until the kvstore can be accessed and all identities
