@@ -427,18 +427,31 @@ func (ipc *IPCache) resolveIdentity(ctx context.Context, prefix netip.Prefix, in
 	}
 
 	lbls := info.ToLabels()
+	hasRemoteNode := lbls.Has(labels.LabelRemoteNode[labels.IDNameRemoteNode])
+
+	// Add in CIDR labels where needed:
+	// - for out-of-cluster entities
+	// - for remote nodes, when policy-cidr-selects-nodes is enabled
+	if !lbls.Has(labels.LabelHost[labels.IDNameHost]) &&
+		!lbls.Has(labels.LabelHealth[labels.IDNameHealth]) &&
+		!lbls.Has(labels.LabelIngress[labels.IDNameIngress]) &&
+		(!hasRemoteNode || (option.Config.PolicyCIDRSelectsNodes && hasRemoteNode)) {
+		cidrLabels := cidrlabels.GetCIDRLabels(prefix)
+		lbls.MergeLabels(cidrLabels)
+	}
+
+	// GetCIDRLabels added in reserved:world unconditionally; remove that
+	// from in-cluster components
 	if (lbls.Has(labels.LabelWorld[labels.IDNameWorld]) ||
 		lbls.Has(labels.LabelWorldIPv4[labels.IDNameWorldIPv4]) ||
 		lbls.Has(labels.LabelWorldIPv6[labels.IDNameWorldIPv6])) &&
-		(lbls.Has(labels.LabelRemoteNode[labels.IDNameRemoteNode]) ||
-			lbls.Has(labels.LabelHost[labels.IDNameHost])) {
+		(hasRemoteNode || lbls.Has(labels.LabelHost[labels.IDNameHost])) {
 		// If the prefix is associated with both world and (remote-node or
-		// host), then the latter (remote-node or host) take precedence to
-		// avoid allocating a CIDR identity for an entity within the cluster.
+		// host), then the latter (remote-node or host) take precedence and
+		// world should not be applied.
 		n := lbls.Remove(labels.LabelWorld)
 		n = n.Remove(labels.LabelWorldIPv4)
 		n = n.Remove(labels.LabelWorldIPv6)
-		n = n.Remove(cidrlabels.GetCIDRLabels(prefix))
 		lbls = n
 	}
 
@@ -460,23 +473,6 @@ func (ipc *IPCache) resolveIdentity(ctx context.Context, prefix netip.Prefix, in
 		// identities below.
 		identity.AddReservedIdentityWithLabels(identity.ReservedIdentityHost, lbls)
 		return identity.LookupReservedIdentity(identity.ReservedIdentityHost), false, nil
-	}
-
-	// If no other labels are associated with this IP, we assume that it's
-	// outside of the cluster and hence needs a CIDR identity.
-	//
-	// This is trying to ensure that remote nodes are assigned the reserved
-	// identity "remote-node" (6) or "kube-apiserver" (7). The datapath
-	// later makes assumptions about remote cluster nodes in the function
-	// identity_is_remote_node(). For now, there is no way to associate any
-	// other labels with such IPs, but this assumption will break if/when
-	// we allow more arbitrary labels to be associated with these IPs that
-	// correspond to remote nodes.
-	if !lbls.Has(labels.LabelRemoteNode[labels.IDNameRemoteNode]) &&
-		!lbls.Has(labels.LabelHealth[labels.IDNameHealth]) &&
-		!lbls.Has(labels.LabelIngress[labels.IDNameIngress]) {
-		cidrLabels := cidrlabels.GetCIDRLabels(prefix)
-		lbls.MergeLabels(cidrLabels)
 	}
 
 	// This should only ever allocate an identity locally on the node,
