@@ -1136,6 +1136,9 @@ func InitGlobalFlags(cmd *cobra.Command, vp *viper.Viper) {
 	flags.MarkHidden(option.EnableK8sNetworkPolicy)
 	option.BindEnv(vp, option.EnableK8sNetworkPolicy)
 
+	flags.Bool(option.PolicyCIDRSelectsNodes, defaults.PolicyCIDRSelectsNodes, "enable selecting in-cluster nodes via NetworkPolicy CIDR selectors")
+	option.BindEnv(vp, option.PolicyCIDRSelectsNodes)
+
 	if err := vp.BindPFlags(flags); err != nil {
 		log.Fatalf("BindPFlags failed: %s", err)
 	}

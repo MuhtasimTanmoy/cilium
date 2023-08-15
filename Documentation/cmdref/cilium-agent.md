@@ -278,6 +278,7 @@ cilium-agent [flags]
       --node-port-bind-protection                                 Reject application bind(2) requests to service ports in the NodePort range (default true)
       --node-port-range strings                                   Set the min/max NodePort port range (default [30000,32767])
       --policy-audit-mode                                         Enable policy audit (non-drop) mode
+      --policy-cidr-selects-nodes                                 enable selecting in-cluster nodes via NetworkPolicy CIDR selectors
       --policy-queue-size int                                     Size of queues for policy-related events (default 100)
       --pprof                                                     Enable serving pprof debugging API
       --pprof-address string                                      Address that pprof listens on (default "localhost")
