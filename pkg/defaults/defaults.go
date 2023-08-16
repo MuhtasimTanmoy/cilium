@@ -556,7 +556,7 @@ const (
 	EnableK8sNetworkPolicy = true
 
 	// PolicyCIDRSelectsNodes enables support for selecting nodes via CIDR selectors
-	PolicyCIDRSelectsNodes = false
+	PolicyCIDRSelectsNodes = true
 )
 
 var (
