@@ -20,6 +20,7 @@ import (
 	"github.com/cilium/cilium/pkg/hubble/parser/options"
 	"github.com/cilium/cilium/pkg/k8s/utils"
 	"github.com/cilium/cilium/pkg/monitor/api"
+	"github.com/cilium/cilium/pkg/policy/correlation"
 	"github.com/cilium/cilium/pkg/proxy/accesslog"
 	"github.com/cilium/cilium/pkg/u8proto"
 )
@@ -149,6 +150,11 @@ func (p *Parser) Decode(r *accesslog.LogRecord, decoded *flowpb.Flow) error {
 	decoded.PolicyMatchType = 0
 	decoded.TraceContext = p.getTraceContext(r)
 	decoded.Summary = p.getSummary(r, decoded)
+
+	err = correlation.CorrelatePolicy(p.endpointGetter, decoded)
+	if err != nil {
+		p.log.WithError(err).Error("error correlating policy with flow")
+	}
 
 	return nil
 }
