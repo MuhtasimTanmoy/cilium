@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	kmmetrics "github.com/cilium/cilium/kvstoremesh/metrics"
+	cmmetrics "github.com/cilium/cilium/clustermesh-apiserver/metrics"
 	kmopt "github.com/cilium/cilium/kvstoremesh/option"
 	"github.com/cilium/cilium/pkg/clustermesh/kvstoremesh"
 	"github.com/cilium/cilium/pkg/clustermesh/types"
@@ -42,8 +42,6 @@ var (
 			}
 		},
 		PreRun: func(cmd *cobra.Command, args []string) {
-			// Overwrite the metrics namespace with the one specific for KVStoreMesh
-			metrics.Namespace = metrics.CiliumKVStoreMeshNamespace
 			option.Config.Populate(rootHive.Viper())
 			if option.Config.Debug {
 				log.Logger.SetLevel(logrus.DebugLevel)
@@ -63,7 +61,7 @@ func init() {
 		controller.Cell,
 
 		gops.Cell(defaults.GopsPortKVStoreMesh),
-		kmmetrics.Cell,
+		cmmetrics.Cell(metrics.CiliumKVStoreMeshNamespace),
 
 		cell.Config(kmopt.KVStoreMeshConfig{}),
 		cell.Config(cmtypes.DefaultClusterInfo),

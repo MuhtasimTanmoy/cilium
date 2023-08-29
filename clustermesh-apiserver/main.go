@@ -70,8 +70,6 @@ var (
 			}
 		},
 		PreRun: func(cmd *cobra.Command, args []string) {
-			// Overwrite the metrics namespace with the one specific for the ClusterMesh API Server
-			metrics.Namespace = metrics.CiliumClusterMeshAPIServerNamespace
 			option.Config.Populate(vp)
 			if option.Config.Debug {
 				log.Logger.SetLevel(logrus.DebugLevel)
@@ -108,7 +106,7 @@ func init() {
 		heartbeat.Cell,
 
 		healthAPIServerCell,
-		cmmetrics.Cell,
+		cmmetrics.Cell(metrics.CiliumClusterMeshAPIServerNamespace),
 		store.Cell,
 		usersManagementCell,
 		cell.Invoke(registerHooks),
