@@ -1,14 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright Authors of Cilium
 
-package main
+package apiserver
 
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net"
-	"os"
 	"path"
 	"sync"
 
@@ -16,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	apiserverK8s "github.com/cilium/cilium/clustermesh-apiserver/k8s"
+	apiserverK8s "github.com/cilium/cilium/clustermesh-apiserver/apiserver/k8s"
 	operatorWatchers "github.com/cilium/cilium/operator/watchers"
 	cmtypes "github.com/cilium/cilium/pkg/clustermesh/types"
 	cmutils "github.com/cilium/cilium/pkg/clustermesh/utils"
@@ -47,7 +45,7 @@ var (
 
 func NewCmd(h *hive.Hive) *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "clustermesh-apiserver",
+		Use:   "apiserver",
 		Short: "Run the ClusterMesh apiserver",
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := h.Run(); err != nil {
@@ -96,13 +94,6 @@ func registerHooks(lc hive.Lifecycle, params parameters) error {
 		},
 	})
 	return nil
-}
-
-func main() {
-	if err := NewCmd(hive.New(Cell)).Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
 }
 
 type identitySynchronizer struct {

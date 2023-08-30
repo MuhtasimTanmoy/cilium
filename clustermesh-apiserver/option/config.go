@@ -13,9 +13,9 @@ import (
 
 const (
 	// PprofAddressAPIServer is the default value for pprof in the clustermesh-apiserver
-	PprofAddressAPIServer = "localhost"
+	PprofAddress = "localhost"
 
-	// PprofPortAPIServer is the default value for pprof in the clustermesh-apiserver
+	// PprofPortAPIServer is the default value for pprof in the clustermesh-apiserver (apiserver)
 	PprofPortAPIServer = 6063
 )
 
