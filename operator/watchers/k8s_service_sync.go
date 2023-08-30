@@ -13,7 +13,6 @@ import (
 	k8sClient "github.com/cilium/cilium/pkg/k8s/client"
 	"github.com/cilium/cilium/pkg/k8s/resource"
 	slim_corev1 "github.com/cilium/cilium/pkg/k8s/slim/k8s/api/core/v1"
-	"github.com/cilium/cilium/pkg/k8s/utils"
 	"github.com/cilium/cilium/pkg/kvstore"
 	"github.com/cilium/cilium/pkg/kvstore/store"
 	"github.com/cilium/cilium/pkg/loadbalancer"
@@ -89,8 +88,6 @@ type ServiceSyncConfiguration interface {
 
 	// LocalClusterID must return the local cluster id
 	LocalClusterID() uint32
-
-	utils.ServiceConfiguration
 }
 
 type ServiceSyncParameters struct {
