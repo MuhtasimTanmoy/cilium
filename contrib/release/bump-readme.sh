@@ -8,6 +8,7 @@ source $DIR/../backporting/common.sh
 
 MAJ_REGEX='[0-9]\+\.[0-9]\+'
 MIN_REGEX='[0-9]\+\.[0-9]\+\.[0-9]\+'
+PRE_REGEX='[0-9]\+\.[0-9]\+\.[0-9]\+-\(pre\|rc\)\.[0-9]\+'
 REGEX_FILTER_DATE='s/^\([-0-9]\+\).*/\1/'
 PROJECTS_REGEX='s/.*projects\/\([0-9]\+\).*/\1/'
 ACTS_YAML=".github/maintainers-little-helper.yaml"
@@ -25,7 +26,7 @@ update_release() {
     obj_regex="$3"
     rem_branch_regex="$4"
 
-    new_branch=$old_branch
+    new_branch=$(echo $latest | sed 's/\('$MAJ_REGEX'\).*/\1/')
     current=$(grep -F $old_branch README.rst \
               | grep $rem_branch_regex \
               | sed 's/.*'"$obj_regex"'\('"$rem_branch_regex"'\).*/\1/')
@@ -64,6 +65,17 @@ for release in $(grep "Release Notes" README.rst \
     fi
 
     update_release $release $latest "tree\/v" "$MIN_REGEX"
+done
+
+for release in $(grep "$PRE_REGEX" README.rst \
+                 | sed 's/.*commits\/\(v'"$MAJ_REGEX"'\).*/\1/'); do
+    latest=$(git describe --tags $REMOTE/main \
+             | sed 's/v//' | sed 's/\('"$PRE_REGEX"'\).*/\1/')
+    if grep -q -F $latest README.rst; then
+        continue
+    fi
+
+    update_release $release $latest "commits\/v" "$PRE_REGEX"
 done
 
 git add README.rst stable.txt Documentation/_static/stable-version.json $ACTS_YAML
