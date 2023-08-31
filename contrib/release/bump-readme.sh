@@ -44,10 +44,32 @@ update_release() {
     echo "Updating $old_branch:"
     echo "  $current on $old_date with project $old_proj to"
     echo "  $latest on $new_date with project $new_proj"
-    sed -i 's/'$old_branch'\(.*\)'$old_date'/'$new_branch'\1'$new_date'/g' README.rst
+    sed -i 's/'$obj_regex$old_branch'\(.*\)'$old_date'/'$new_branch'\1'$new_date'/g' README.rst
     sed -i 's/v'$current'/v'$latest'/g' README.rst
     sed -i 's/\(projects\/\)'$old_proj'/\1'$new_proj'/g' $ACTS_YAML
 
+}
+
+# $1 - git tree path to commit object, eg tree/ or commits/
+check_table() {
+    obj_regex="$1"
+
+    readarray -t table < <(grep -C 1 "$obj_regex" README.rst)
+
+    len=""
+    for line in "${table[@]}"; do
+        if [ -z $len ]; then
+            len="$(echo $line | wc -c)"
+            continue
+        fi
+        if [ "$(echo "$line" | wc -c)" != "$len" ]; then
+            >&2 echo "The following table is malformed, please fix it:"
+            for l in "${table[@]}"; do
+                >&2 echo "$l"
+            done
+            exit 1
+        fi
+    done
 }
 
 for release in $(grep "Release Notes" README.rst \
@@ -66,6 +88,7 @@ for release in $(grep "Release Notes" README.rst \
 
     update_release $release $latest "tree\/v" "$MIN_REGEX"
 done
+check_table "tree/v1"
 
 for release in $(grep "$PRE_REGEX" README.rst \
                  | sed 's/.*commits\/\(v'"$MAJ_REGEX"'\).*/\1/'); do
@@ -77,6 +100,7 @@ for release in $(grep "$PRE_REGEX" README.rst \
 
     update_release $release $latest "commits\/v" "$PRE_REGEX"
 done
+check_table "commits/v1"
 
 git add README.rst stable.txt Documentation/_static/stable-version.json $ACTS_YAML
 if ! git diff-index --quiet HEAD -- README.rst stable.txt Documentation/_static/stable-version.json $ACTS_YAML; then
