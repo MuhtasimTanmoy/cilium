@@ -27,11 +27,11 @@ var logger = logging.DefaultLogger.WithField(logfields.LogSubsys, "hubble-flow-p
 
 // CorrelatePolicy updates the IngressAllowedBy/EgressAllowedBy fields on the
 // provided flow.
-func CorrelatePolicy(endpointGetter getters.EndpointGetter, f *flowpb.Flow) error {
+func CorrelatePolicy(endpointGetter getters.EndpointGetter, f *flowpb.Flow) {
 	if f.GetEventType().GetType() != int32(monitorAPI.MessageTypePolicyVerdict) ||
 		f.GetVerdict() != flowpb.Verdict_FORWARDED {
 		// we are only interested in policy verdict notifications for forwarded flows
-		return nil
+		return
 	}
 
 	// extract fields relevant for looking up the policy
@@ -41,7 +41,7 @@ func CorrelatePolicy(endpointGetter getters.EndpointGetter, f *flowpb.Flow) erro
 	epInfo, ok := endpointGetter.GetEndpointInfo(endpointIP)
 	if !ok {
 		logger.WithField(logfields.IPAddr, endpointIP).Debug("failed to lookup endpoint")
-		return nil
+		return
 	}
 
 	derivedFrom, rev, ok := lookupPolicyForKey(epInfo, policy.Key{
@@ -57,7 +57,7 @@ func CorrelatePolicy(endpointGetter getters.EndpointGetter, f *flowpb.Flow) erro
 			logfields.Protocol:         proto,
 			logfields.TrafficDirection: direction,
 		}).Debug("unable to find policy for policy verdict notification")
-		return nil
+		return
 	}
 
 	allowedBy := toProto(derivedFrom, rev)
@@ -67,8 +67,6 @@ func CorrelatePolicy(endpointGetter getters.EndpointGetter, f *flowpb.Flow) erro
 	case trafficdirection.Ingress:
 		f.IngressAllowedBy = allowedBy
 	}
-
-	return nil
 }
 
 func extractFlowKey(f *flowpb.Flow) (

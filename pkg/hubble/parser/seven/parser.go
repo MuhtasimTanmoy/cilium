@@ -151,9 +151,8 @@ func (p *Parser) Decode(r *accesslog.LogRecord, decoded *flowpb.Flow) error {
 	decoded.TraceContext = p.getTraceContext(r)
 	decoded.Summary = p.getSummary(r, decoded)
 
-	err = correlation.CorrelatePolicy(p.endpointGetter, decoded)
-	if err != nil {
-		p.log.WithError(err).Error("error correlating policy with flow")
+	if p.endpointGetter != nil {
+		correlation.CorrelatePolicy(p.endpointGetter, decoded)
 	}
 
 	return nil

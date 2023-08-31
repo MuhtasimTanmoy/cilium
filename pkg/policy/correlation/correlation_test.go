@@ -86,8 +86,7 @@ func TestCorrelatePolicy(t *testing.T) {
 		},
 	}
 
-	err := CorrelatePolicy(endpointGetter, flow)
-	require.NoError(t, err)
+	CorrelatePolicy(endpointGetter, flow)
 
 	expected := []*flowpb.Policy{
 		{
@@ -145,8 +144,7 @@ func TestCorrelatePolicy(t *testing.T) {
 			return nil, false
 		},
 	}
-	err = CorrelatePolicy(endpointGetter, flow)
-	require.NoError(t, err)
+	CorrelatePolicy(endpointGetter, flow)
 
 	require.Nil(t, flow.EgressAllowedBy)
 	if diff := cmp.Diff(expected, flow.IngressAllowedBy, protocmp.Transform()); diff != "" {
